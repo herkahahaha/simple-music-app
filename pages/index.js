@@ -1,82 +1,127 @@
-import Head from 'next/head'
+import React from 'react'
+import SongCard from '../components/popular-song'
+import ArtistCard from '../components/top_artist'
+import InputSearch from '../components/ui/input-search'
+import SearchList from '../components/search-list'
+import { getTracks, getArtist } from '../lib/fetcher'
+import axios from 'axios'
 
-export default function Home() {
+function Home({
+  dataTracks,
+  dataArtist,
+}) {
+
+  const [inputValue, setInputValue] = React.useState('')
+  const [artistSearch, setArtistSearch] = React.useState([])
+  const [trackSearch, setTrackSearch] = React.useState([])
+
+  React.useEffect(() => {
+
+    getSearchArtist(inputValue)
+    getSearchTracks(inputValue)
+  }, [inputValue])
+
+  const getSearchArtist = async (params) => {
+    try {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_ASK_URL}?method=artist.search&artist=${params}&api_key=${process.env.NEXT_PUBLIC_API_KEY}&format=json&limit=5`)
+      const result = await res.data.results.artistmatches
+      const data = await result.artist
+      setArtistSearch(data)
+    } catch (error) {
+      console.error("cant fetch the search artist data")
+    }
+  }
+
+  const getSearchTracks = async (params) => {
+    try {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_ASK_URL}?method=track.search&track=${params}&api_key=${process.env.NEXT_PUBLIC_API_KEY}&format=json&limit=5`)
+      const result = await res.data.results.trackmatches
+      const data = await result.track
+      setTrackSearch(data)
+    } catch (error) {
+      console.error("cant fetch the search track data")
+    }
+  }
+
+  const PopularSong = dataTracks.track
+  const TopArtist = dataArtist.artist
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <>
+      <section className='grid grid-cols-1 md:grid-cols-3 gap-4 my-24' >
 
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
-
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="p-3 font-mono text-lg bg-gray-100 rounded-md">
-            pages/index.js
-          </code>
-        </p>
-
-        <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        {/* Popular song */}
+        <div className='md:col-span-2'>
+          <h2 className='text-stone-900'>Popular Songs</h2>
+          <div className="grid grid-rows-5 grid-flow-col gap-2 mt-8">
+            {PopularSong.map(val => <SongCard tracks={val} />)}
+          </div>
         </div>
-      </main>
 
-      <footer className="flex items-center justify-center w-full h-24 border-t">
-        <a
-          className="flex items-center justify-center"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="h-4 ml-2" />
-        </a>
-      </footer>
-    </div>
+        {/* Artist List */}
+        <div className=''>
+          <h3 className='text-stone-900'>Top Artist</h3>
+          <div className="mt-8">
+            {TopArtist.map(val => <ArtistCard data={val} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* search music */}
+      <section>
+        <h2>Search Music and Artist</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <InputSearch value={inputValue} setValue={(e) => setInputValue(e.target.value.toLowerCase())} />
+        </div>
+
+
+        <div className="grid md:grid-cols-4 gap-4">
+          {/* track */}
+          <div className="col-start-2">
+            <h3 className={inputValue !== "" ? 'block' : `hidden`}>Tracks</h3>
+            {trackSearch.length > 0 && inputValue !== "" ? trackSearch.map(val => {
+              return (
+                <div className="">
+                  <SearchList data={val} />
+                </div>
+              )
+            })
+              : <div className='w-40 h-32 my-5'>
+                <iframe src="https://giphy.com/embed/BEob5qwFkSJ7G" width="auto" height="auto" frameBorder="0" className="giphy-embed" allowFullScreen></iframe></div>}
+
+          </div>
+
+          {/* artist */}
+          <div className="">
+            <h3 className={inputValue !== "" ? 'block' : `hidden`}>Artist</h3>
+            {artistSearch.length > 0 && inputValue !== "" ? artistSearch.map(val => {
+              return (
+                <div className="">
+                  <SearchList data={val} />
+                </div>
+              )
+            }
+            ) : <p className='hidden'>kosong</p>}
+          </div>
+
+        </div>
+
+      </section>
+
+    </>
   )
+}
+export default Home
+
+export async function getStaticProps() {
+
+  const dataTracks = await getTracks()
+  const dataArtist = await getArtist()
+
+  return {
+    props: {
+      dataTracks,
+      dataArtist
+    }
+  }
 }
