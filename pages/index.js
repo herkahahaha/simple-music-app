@@ -53,7 +53,7 @@ function Home({
         {/* Popular song */}
         <div className='md:col-span-2'>
           <h2 className='text-stone-900'>Popular Songs</h2>
-          <div className="grid grid-rows-5 grid-flow-col gap-2 mt-8">
+          <div className="grid grid-cols-2 md:grid-rows-5 md:grid-flow-col gap-2 mt-8">
             {PopularSong.map(val => <SongCard tracks={val} />)}
           </div>
         </div>
@@ -61,7 +61,7 @@ function Home({
         {/* Artist List */}
         <div className=''>
           <h3 className='text-stone-900'>Top Artist</h3>
-          <div className="mt-8">
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-1">
             {TopArtist.map(val => <ArtistCard data={val} />)}
           </div>
         </div>
@@ -75,9 +75,9 @@ function Home({
         </div>
 
 
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* track */}
-          <div className="col-start-2">
+          <div className="md:col-start-2">
             <h3 className={inputValue !== "" ? 'block' : `hidden`}>Tracks</h3>
             {trackSearch.length > 0 && inputValue !== "" ? trackSearch.map(val => {
               return (
